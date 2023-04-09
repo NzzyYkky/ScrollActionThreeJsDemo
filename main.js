@@ -40,6 +40,79 @@ torus.position.set(0, 1, 10);
 
 scene.add(box, torus);
 
+// smooth
+function lerp(x, y, a) {
+	return (1 - a) * x + a * y;
+}
+
+function scalePercent(start, end) {
+	return (scrollPercent - start) / (end - start);
+}
+
+// Scroll Animation
+const animationScripts = [];
+
+animationScripts.push({
+	start: 0,
+	end: 40,
+	function() {
+		camera.lookAt(box.position);
+		camera.position.set(0, 1, 10);
+		box.position.z = lerp(-15, 2, scalePercent(0, 40));
+		torus.position.z = lerp(10, -20, scalePercent(0, 40));
+	},
+});
+
+animationScripts.push({
+	start: 40,
+	end: 60,
+	function() {
+		camera.lookAt(box.position);
+		camera.position.set(0, 1, 10);
+		box.rotation.z = lerp(1, Math.PI, scalePercent(40, 60));
+	},
+});
+
+animationScripts.push({
+	start: 60,
+	end: 80,
+	function() {
+		camera.lookAt(box.position);
+		camera.position.x = lerp(0, -15, scalePercent(60, 80));
+		camera.position.y = lerp(1, 15, scalePercent(60, 80));
+		camera.position.z = lerp(10, 25, scalePercent(60, 80));
+	},
+});
+
+animationScripts.push({
+	start: 80,
+	end: 100,
+	function() {
+		camera.lookAt(box.position);
+		box.rotation.x += 0.02;
+		box.rotation.y += 0.02;
+	},
+});
+
+function playScrollAnimation() {
+	animationScripts.forEach((animation) => {
+		if (scrollPercent >= animation.start && scrollPercent <= animation.end) {
+			animation.function();
+		}
+	});
+}
+
+// get Scroll value
+let scrollPercent = 0;
+
+document.body.onscroll = () => {
+	scrollPercent =
+		(document.documentElement.scrollTop /
+			(document.documentElement.scrollHeight -
+				document.documentElement.clientHeight)) *
+		100;
+};
+
 //レンダラー
 const renderer = new THREE.WebGLRenderer({
 	canvas: canvas,
@@ -50,6 +123,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 //アニメーション
 const tick = () => {
 	window.requestAnimationFrame(tick);
+	playScrollAnimation();
 	renderer.render(scene, camera);
 };
 
